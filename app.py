@@ -202,10 +202,29 @@ st.divider()
 run_disabled = scenario is None
 if st.button("🚀  Run LangGraph Pipeline", type="primary", disabled=run_disabled, use_container_width=True):
     with st.spinner("LangGraph executing nodes…"):
-        state = run_pipeline(scenario, cb=status_cb)
+        state = run_pipeline(scenario, cb=None)
+
+    # ── Update tracker cards from agent_log after completion ───
+    agent_log = state.get("agent_log", [])
+    log_by_name = {l["agent"]: l for l in agent_log}
+    for ag in ALL_AGENTS:
+        log = log_by_name.get(ag.name)
+        if log:
+            status = log["status"]
+            retries = log.get("retries", 0)
+            extra = f" (retry {retries})" if retries > 0 else ""
+            duration = f" — {log.get('duration_s', '')}s"
+            tracker[ag.name].markdown(
+                f'<div class="agent-card {status}">'
+                f'<strong>{ag.icon} {ag.name}</strong> '
+                f'<span class="badge badge-{status}">{status}{extra}</span>'
+                f'<small style="color:#6b7280">{duration}</small><br>'
+                f'<small style="color:#9ca3af">{ag.description}</small>'
+                f'</div>',
+                unsafe_allow_html=True,
+            )
 
     # ── Metrics ────────────────────────────────────────────────
-    agent_log = state.get("agent_log", [])
     successes = sum(1 for l in agent_log if l["status"] == "complete")
     total_retries = sum(l.get("retries", 0) for l in agent_log)
     metrics_placeholder.markdown(f"""
