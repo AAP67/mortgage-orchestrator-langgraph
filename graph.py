@@ -166,7 +166,7 @@ def compliance_node(state: PipelineState) -> dict:
     output, log = _call_agent(COMPLIANCE, prompt, cb=_status_cb)
     return {
         "compliance": output,
-        "agent_log": state.get("agent_log", []) + [log],
+        "agent_log": [log],
     }
 
 
@@ -176,7 +176,7 @@ def risk_node(state: PipelineState) -> dict:
     output, log = _call_agent(RISK, prompt, cb=_status_cb)
     return {
         "risk": output,
-        "agent_log": state.get("agent_log", []) + [log],
+        "agent_log": [log],
     }
 
 
@@ -191,7 +191,7 @@ def communication_node(state: PipelineState) -> dict:
     output, log = _call_agent(COMMUNICATION, prompt, cb=_status_cb)
     return {
         "communication": output,
-        "agent_log": state.get("agent_log", []) + [log],
+        "agent_log": [log],
     }
 
 
@@ -207,7 +207,7 @@ def synthesis_node(state: PipelineState) -> dict:
     output, log = _call_agent(SYNTHESIS, prompt, cb=_status_cb)
     return {
         "synthesis": output,
-        "agent_log": state.get("agent_log", []) + [log],
+        "agent_log": [log],
     }
 
 
@@ -224,7 +224,7 @@ def quality_check_node(state: PipelineState) -> dict:
     output, log = _call_agent(QUALITY_CHECKER, prompt, cb=_status_cb)
     return {
         "quality_check": output,
-        "agent_log": state.get("agent_log", []) + [log],
+        "agent_log": [log],
     }
 
 
