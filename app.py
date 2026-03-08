@@ -66,42 +66,37 @@ st.markdown("""
 </div>""", unsafe_allow_html=True)
 
 # ── Architecture explainer ─────────────────────────────────────────
-with st.expander("⚙️  How the LangGraph orchestration works"):
-    col_diagram, col_compare = st.columns(2)
-    with col_diagram:
-        st.markdown("**Graph Definition**")
-        st.code("""
-graph = StateGraph(PipelineState)
-
-# Nodes
-graph.add_node("compliance", compliance_node)
-graph.add_node("risk", risk_node)
-graph.add_node("communication", communication_node)
-graph.add_node("synthesis", synthesis_node)
-graph.add_node("quality_check", quality_check_node)
-
-# Edges (the DAG)
-graph.add_edge(START, "compliance")
-graph.add_edge(START, "risk")
-graph.add_edge("compliance", "communication")
-graph.add_edge("risk", "communication")
-graph.add_edge("communication", "synthesis")
-graph.add_edge("synthesis", "quality_check")
-graph.add_edge("quality_check", END)
-        """, language="python")
-    with col_compare:
-        st.markdown("**Raw Python vs LangGraph**")
-        st.markdown("""
-| Aspect | Raw Python | LangGraph |
-|--------|-----------|-----------|
-| State | Manual dataclass | TypedDict (auto-managed) |
-| DAG | if/then + ThreadPool | `add_edge()` declarations |
-| Execution | Custom `run_pipeline()` | `graph.invoke()` |
-| Parallel | ThreadPoolExecutor | Built-in fan-out |
-| Lines of orchestration | ~120 | ~30 |
-
-**Same agents, same prompts, same output** — only the orchestration layer changed.
-        """)
+with st.expander("⚙️  How the orchestration works"):
+    st.code("""
+    Input Scenario
+         │
+         ├───────────────────┐
+         ▼                   ▼
+    ┌───────────┐     ┌───────────┐
+    │ Compliance│     │   Risk    │    ← Step 1: Fan-out
+    │   Agent   │     │   Agent   │
+    └─────┬─────┘     └─────┬─────┘
+          └────────┬────────┘
+                   ▼
+          ┌──────────────┐
+          │Communication │             ← Step 2: Fan-in
+          │    Agent     │
+          └──────┬───────┘
+                 ▼
+          ┌──────────────┐
+          │  Synthesis   │             ← Step 3: Sequential
+          │    Agent     │
+          └──────┬───────┘
+                 ▼
+          ┌──────────────┐
+          │   Quality    │             ← Step 4: LLM-as-Judge
+          │   Checker    │
+          └──────────────┘
+    """, language=None)
+    st.markdown("""
+    **Patterns:** Graph-based DAG · Fan-out/Fan-in · Typed shared state ·
+    Structured JSON validation · Retry logic · LLM-as-Judge evaluation
+    """)
 
 st.divider()
 
