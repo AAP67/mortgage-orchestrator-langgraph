@@ -1,12 +1,15 @@
 """
 LangGraph state schema.
 
-In the raw Python version we manually managed a PipelineState dataclass.
-LangGraph replaces that with a TypedDict that automatically flows through
-the graph. Each node reads from and writes to this shared state.
+LangGraph manages this TypedDict as shared state flowing through the graph.
+Each node reads from and writes to this state.
+
+The agent_log field uses an Annotated reducer (operator.add) so that
+parallel nodes (compliance + risk) can both append to it without conflict.
 """
 
-from typing import TypedDict, Any
+from typing import TypedDict, Annotated
+import operator
 
 
 class PipelineState(TypedDict):
@@ -22,5 +25,5 @@ class PipelineState(TypedDict):
     synthesis: dict
     quality_check: dict
 
-    # Tracking
-    agent_log: list[dict]  # [{agent, status, duration_s, retries}]
+    # Tracking — uses add reducer so parallel nodes can append
+    agent_log: Annotated[list[dict], operator.add]
