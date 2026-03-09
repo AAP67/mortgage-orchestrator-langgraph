@@ -62,7 +62,7 @@ st.markdown("""
 st.markdown("""
 <div class="hero">
   <h1>🏠 Mortgage Servicing Intelligence <span class="framework-badge">LangGraph</span></h1>
-  <p>Same multi-agent pipeline, now built with LangGraph — compare with the raw Python version</p>
+  <p>Multi-agent pipeline, built with LangGraph</p>
 </div>""", unsafe_allow_html=True)
 
 # ── Architecture explainer ─────────────────────────────────────────
