@@ -1,96 +1,75 @@
-# 🏠 Mortgage Servicing Intelligence — LangGraph
+# Mortgage Servicing Intelligence
 
 **Multi-agent LLM orchestration for mortgage servicing analysis, built with LangGraph.**
 
+Input a mortgage scenario — forbearance, collections, loan modification — and 5 specialized AI agents produce a unified action plan with compliance analysis, risk assessment, borrower communication, and quality evaluation.
+
+![Demo Screenshot](assets/demo-screenshot_mortgage.png)
+<!-- Replace with actual screenshot -->
+
+**[Try the Live Demo →](your-streamlit-url)**
+
 ---
-
-## What It Does
-
-Input a mortgage servicing scenario (forbearance, collections, loan modification, etc.) → the system orchestrates 5 specialized AI agents through a dependency-aware pipeline → produces a unified action plan with compliance analysis, risk assessment, borrower communication, and rubric-based quality evaluation.
 
 ## Architecture
 
-```python
-graph = StateGraph(PipelineState)
+Compliance and Risk agents run in parallel (fan-out), then merge into Communication (fan-in), flow through Synthesis, and finish with an LLM-as-Judge quality check.
 
-# 5 agent nodes
-graph.add_node("compliance", compliance_node)
-graph.add_node("risk", risk_node)
-graph.add_node("communication", communication_node)
-graph.add_node("synthesis", synthesis_node)
-graph.add_node("quality_check", quality_check_node)
-
-# DAG edges
-graph.add_edge(START, "compliance")              # fan-out
-graph.add_edge(START, "risk")                    # fan-out
-graph.add_edge("compliance", "communication")    # fan-in
-graph.add_edge("risk", "communication")          # fan-in
-graph.add_edge("communication", "synthesis")
-graph.add_edge("synthesis", "quality_check")
-graph.add_edge("quality_check", END)
 ```
+START ──┬── Compliance Agent ──┐
+        │                      ├── Communication Agent ── Synthesis ── Quality Checker ── END
+        └── Risk Agent ────────┘
+```
+
+**Stack:** LangGraph · Claude Sonnet (Anthropic) · Streamlit · Python
 
 ## Orchestration Patterns
 
-| Pattern | Implementation |
-|---------|---------------|
-| **Graph-based DAG** | `StateGraph` with declared nodes and edges |
-| **Fan-out / Fan-in** | START splits to Compliance + Risk, both merge into Communication |
-| **Typed shared state** | `TypedDict` schema auto-managed by LangGraph |
-| **Structured output validation** | Every agent returns validated JSON |
-| **Retry logic** | Up to 2 retries on parse failure per agent |
-| **LLM-as-Judge** | Quality Checker scores all outputs on a 5-dimension rubric |
-| **Status callbacks** | Real-time UI updates as nodes execute |
+- **Graph-based DAG** — `StateGraph` with declared nodes and edges
+- **Fan-out / Fan-in** — parallel execution with dependency-aware merging
+- **Typed shared state** — `TypedDict` schema auto-managed by LangGraph
+- **Structured output validation** — every agent returns validated JSON with retry logic (2 retries on parse failure)
+- **LLM-as-Judge** — Quality Checker scores outputs on a 5-dimension rubric (accuracy, completeness, consistency, communication quality, actionability)
+- **Status callbacks** — real-time UI updates as nodes execute
 
 ## Agents
 
-1. **Compliance Agent** — federal/state regulations, disclosures, deadlines
-2. **Risk Agent** — delinquency risk, refinance eligibility, cross-sell opportunities
-3. **Communication Agent** — drafts compliant borrower letters (depends on 1 & 2)
-4. **Synthesis Agent** — unified action plan with conflict detection (depends on 1, 2, 3)
-5. **Quality Checker** — rubric-based evaluation across accuracy, completeness, consistency, communication quality, and actionability (depends on all)
+1. **Compliance** — federal/state regulations, disclosures, deadlines
+2. **Risk** — delinquency risk, refinance eligibility, cross-sell opportunities
+3. **Communication** — drafts compliant borrower letters (depends on 1 & 2)
+4. **Synthesis** — unified action plan with conflict detection (depends on 1–3)
+5. **Quality Checker** — rubric-based evaluation across all outputs (depends on 1–4)
 
 ## Scenarios
 
-12 scenarios across 4 segments:
+12 built-in scenarios across 4 segments:
 
 - **Servicer** — forbearance, refinance, escrow shortage, early payoff
-- **Collections** — pre-foreclosure, debt validation disputes, deficiency judgment, third-party collector handoff
+- **Collections** — pre-foreclosure, debt validation, deficiency judgment, third-party handoff
 - **Originator** — servicing transfer, VA loan assumption
 - **Investor/GSE** — loan modification, FHA partial claim
-
-## Tech Stack
-
-- **LangGraph** — graph-based orchestration
-- **Claude API (Sonnet)** — agent LLM backend
-- **Streamlit** — interactive UI with live pipeline tracker
-- **Python** — agent definitions and state schema
 
 ## Project Structure
 
 ```
 ├── state.py           # LangGraph TypedDict state schema
 ├── agents.py          # Agent definitions (system prompts + schemas)
-├── graph.py           # LangGraph pipeline (nodes + edges + execution)
+├── graph.py           # Pipeline (nodes + edges + execution)
 ├── scenarios.py       # Synthetic mortgage scenarios
 ├── app.py             # Streamlit UI
-├── requirements.txt
-└── .streamlit/
-    └── config.toml
+└── requirements.txt
 ```
 
-## Setup
+## Quickstart
 
 ```bash
+git clone https://github.com/your-repo/mortgage-servicing-intelligence.git
+cd mortgage-servicing-intelligence
 pip install -r requirements.txt
 export ANTHROPIC_API_KEY="sk-ant-..."
 streamlit run app.py
 ```
 
-### Deploy to Streamlit Cloud
+## Built By
 
-1. Push repo to GitHub
-2. Go to [share.streamlit.io](https://share.streamlit.io)
-3. Connect repo → select `app.py`
-4. Add `ANTHROPIC_API_KEY` in Settings → Secrets
-5. Deploy
+**[Karan Rajpal](https://www.linkedin.com/in/karan-rajpal/)** — UC Berkeley Haas MBA '25 · LLM Validation @ Handshake AI (OpenAI/Perplexity) · Former 5th hire at Borderless Capital
